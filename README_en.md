@@ -1,7 +1,5 @@
 # MeshShaderDemo
 
-[中文说明 (Chinese README)](./README_zh.md)
-
 ## Introduction
 
 MeshShaderDemo is a Vulkan-based demo project showcasing the basic usage of Mesh Shaders. It integrates meshoptimizer for mesh optimization and includes a complete shader compilation and execution workflow, making it suitable for learning and reference in Mesh Shader development.
