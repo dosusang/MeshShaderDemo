@@ -1,23 +1,24 @@
 @echo off
 setlocal enabledelayedexpansion
 
-rem ÉèÖÃ Vulkan SDK µÄ glslangValidator Â·¾¶
+rem è®¾ç½® Vulkan SDK çš„ glslangValidator è·¯å¾„
 set "GLSLC_PATH=%VK_SDK_PATH%\Bin\glslangValidator.exe"
 
-rem ÉèÖÃÒª±éÀúµÄÎÄ¼ş¼ĞÂ·¾¶£¨µ±Ç°½Å±¾ËùÔÚÄ¿Â¼£©
+rem è·å–å½“å‰è„šæœ¬æ‰€åœ¨ç›®å½•
 set "FOLDER_PATH=%~dp0"
 
-rem ±àÒë¹æÔòÁĞ±í£º¸ñÊ½Îª ÎÄ¼şºó×º|±àÒë²ÎÊı|Êä³öºó×º
+rem ç¼–è¯‘è§„åˆ™åˆ—è¡¨ï¼Œæ ¼å¼ä¸º æ‰©å±•å|å‚æ•°|è¾“å‡ºåç¼€
 for %%T in (
     "vert|-V|_vert.spv"
     "frag|-V|_frag.spv"
     "mesh|-V --target-env vulkan1.2|_mesh.spv"
+    "task|-V --target-env vulkan1.2|_task.spv"
 ) do (
     for /f "tokens=1,2,3 delims=|" %%a in (%%T) do (
         for /r "%FOLDER_PATH%" %%f in (*%%a) do (
             set "FILENAME=%%~nf"
             set "FILEDIR=%%~dpf"
-            echo ±àÒë %%a Shader: %%f
+            echo ç¼–è¯‘ %%a Shader: %%f
             "%GLSLC_PATH%" %%b -o "!FILEDIR!!FILENAME!%%c" "%%f"
         )
     )
