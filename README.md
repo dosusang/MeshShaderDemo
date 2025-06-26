@@ -1,5 +1,5 @@
 # MeshShaderDemo
-[zh (Chinese README)](./README.md)
+[zh (Chinese README)](./README_zh.md)
 
 ## Introduction
 
