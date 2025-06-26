@@ -1,27 +1,25 @@
 # MeshShaderDemo
+## 项目简介
 
-## Introduction
-
-MeshShaderDemo is a Vulkan-based demo project showcasing the basic usage of Mesh Shaders. It integrates meshoptimizer for mesh optimization and includes a complete shader compilation and execution workflow, making it suitable for learning and reference in Mesh Shader development.
-
+MeshShaderDemo 是一个基于 Vulkan 的演示项目，展示了 Mesh Shader 的基本用法。集成了 meshoptimizer 进行网格优化，项目包含完整的着色器编译与运行流程，适合学习和参考 Mesh Shader 相关开发。
 ![hello_meshlet](https://github.com/user-attachments/assets/66cd0264-7ed4-426c-b327-4ce01fc932b7)
+## 依赖
 
-## Dependencies
+本项目依赖以下组件（部分已包含在 `env/` 目录下，无需单独安装）：
 
-This project depends on the following components (most are included in the `env/` directory, no extra installation required):
+- [Vulkan SDK](https://vulkan.lunarg.com/)（需自行安装，并设置环境变量 `VULKAN_SDK`）
+- [GLFW 3.5](https://www.glfw.org/)（已包含在 `env/Include/GLFW` 和 `env/libs/glfw3.lib`）
+- [GLM](https://github.com/g-truc/glm)（已包含在 `env/Include/glm`）
+- [meshoptimizer](https://github.com/zeux/meshoptimizer)（已包含在 `src/meshoptimizer`）
 
-- [Vulkan SDK](https://vulkan.lunarg.com/) (must be installed manually, and the `VULKAN_SDK` environment variable must be set)
-- [GLFW 3.5](https://www.glfw.org/) (included in `env/Include/GLFW` and `env/libs/glfw3.lib`)
-- [GLM](https://github.com/g-truc/glm) (included in `env/Include/glm`)
-- [meshoptimizer](https://github.com/zeux/meshoptimizer) (included in `src/meshoptimizer`)
 
-## Build Instructions
+## 构建方式
 
-1. **Install Vulkan SDK**  
-   Download and install from the [Vulkan official website](https://vulkan.lunarg.com/), and make sure the `VULKAN_SDK` environment variable is set correctly.
+1. **安装 Vulkan SDK**  
+   请从 [Vulkan 官网](https://vulkan.lunarg.com/)下载安装，并确保环境变量 `VULKAN_SDK` 已正确设置。
 
-2. **Generate project files and build**  
-   CMake 3.15 or above is recommended. Run the following commands:
+2. **生成工程文件并编译**  
+   推荐使用 CMake 3.15 及以上版本。命令如下：
 
    ```sh
    mkdir build
@@ -30,35 +28,34 @@ This project depends on the following components (most are included in the `env/
    cmake --build . --config Release
    ```
 
-   After building, the `MeshShaderDemo` executable will be generated in the `build/Release/` or `build/Debug/` directory.
+   编译完成后，`MeshShaderDemo` 可执行文件会生成在 `build/Release/` 或 `build/Debug/` 目录下。
 
-## Shader Compilation
+## 着色器编译
 
-The shader source files are located in the `shaders/` directory. Shaders will be automatically compiled once before startup. You can also manually compile all shaders using the `shaders/compile.bat` script (requires Vulkan SDK and the `VK_SDK_PATH` environment variable):
+项目的着色器源码位于 `shaders/` 目录。启动前会自动调用一次编译，你也可以使用 `shaders/compile.bat` 脚本自动编译所有着色器（需已安装 Vulkan SDK 并设置 `VK_SDK_PATH` 环境变量）：
 
 ```sh
 cd shaders
 compile.bat
 ```
 
-The script will call `glslangValidator.exe` from the Vulkan SDK to compile `.vert`, `.frag`, `.mesh`, etc. shader sources into `.spv` binaries.
+该脚本会自动调用 Vulkan SDK 的 `glslangValidator.exe`，将 `.vert`、`.frag`、`.mesh` 等着色器源码编译为 `.spv` 二进制文件。
 
-## Directory Structure
+## 目录结构简述
 
-- `src/`: Main source code and meshoptimizer
-- `env/Include/`: Third-party headers
-- `env/libs/`: Third-party libraries
-- `env/bin/`: Required DLLs
-- `shaders/`: Shader sources and compilation scripts
+- `src/`：主程序源码及 meshoptimizer
+- `env/Include/`：第三方头文件
+- `env/libs/`：第三方库文件
+- `env/bin/`：运行所需 DLL
+- `shaders/`：着色器源码与编译脚本
 
-## Other Notes
+## 其他说明
 
-- Windows only.
+- 仅支持 Windows 平台。
 
 ## todo
-- Use model loading instead of manual mesh construction
-- Integrate UI
-
+- 使用加载模型而非手动构建mesh的方式
+- 集成UI
 ---
 
-For more details or if you encounter any issues, feel free to ask! 
+如需更详细的说明或遇到问题，欢迎反馈！ 
