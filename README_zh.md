@@ -1,6 +1,6 @@
 # MeshShaderDemo
 
-[中文说明 (Chinese README)](./README_zh.md)
+[中文说明 (Chinese README)](./README.md)
 
 ## Introduction
 
