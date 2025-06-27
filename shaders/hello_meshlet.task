@@ -1,0 +1,36 @@
+#version 460
+#extension GL_EXT_mesh_shader : require
+
+layout(local_size_x = 1) in;
+
+layout(set = 0, binding = 0) uniform UBO {
+    mat4 model;
+    mat4 view;
+    mat4 proj;
+} ubo;
+
+struct Meshlet {
+    uint vertexOffset;
+    uint triangleOffset;
+    uint vertexCount;
+    uint triangleCount;
+};
+
+layout(set = 0, binding = 1) readonly buffer MeshletBuffer {
+    Meshlet meshlets[];
+};
+
+struct Task
+{
+  uint meshletIndex;
+};
+
+taskPayloadSharedEXT Task OUT;
+
+void main()
+{
+    OUT.meshletIndex = gl_GlobalInvocationID.x;
+    if(OUT.meshletIndex % 2 == 0) { // culling rule
+        EmitMeshTasksEXT(1, 1, 1);
+    }
+}

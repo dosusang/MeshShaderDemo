@@ -39,17 +39,26 @@ layout(set = 0, binding = 4) readonly buffer VertexBuffer {
     vec4 vertices[];
 };
 
+
+struct Task {
+    uint    meshletIndex;
+};
+
+taskPayloadSharedEXT Task IN;
+
+uint meshletID = IN.meshletIndex;
+
 void main() {
-    uint meshletIndex = gl_WorkGroupID.x;
-    Meshlet m = meshlets[meshletIndex];
+    Meshlet m = meshlets[meshletID];    
 
     // 顶点信息
     for (uint i = 0; i < m.vertexCount; ++i) {
         uint globalVertexIndex = uniqueVertexIndices[m.vertexOffset + i];
         vec3 pos = vertices[globalVertexIndex].xyz;
         gl_MeshVerticesEXT[i].gl_Position = ubo.proj * ubo.view * ubo.model * vec4(pos, 1.0);
-        outVert[i].color = vec3((meshletIndex%3)/3.0, (meshletIndex%5)/5.0, (meshletIndex%7) / 5.0);
+        outVert[i].color =vec3((meshletID%3/3.), (meshletID%7/7.0), (meshletID%5/5.0));
     }
+
 
     // 三角形信息
     for (uint i = 0; i < m.triangleCount; ++i) {

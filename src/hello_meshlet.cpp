@@ -730,34 +730,34 @@ private:
         uboLayoutBinding.descriptorCount = 1;
         uboLayoutBinding.descriptorType = VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER;
         uboLayoutBinding.pImmutableSamplers = nullptr;
-        uboLayoutBinding.stageFlags = VK_SHADER_STAGE_MESH_BIT_EXT;
+        uboLayoutBinding.stageFlags = VK_SHADER_STAGE_MESH_BIT_EXT | VK_SHADER_STAGE_TASK_BIT_EXT;
 
         VkDescriptorSetLayoutBinding meshletsLayoutBinding{};
         meshletsLayoutBinding.binding = 1;
         meshletsLayoutBinding.descriptorType = VK_DESCRIPTOR_TYPE_STORAGE_BUFFER;
         meshletsLayoutBinding.descriptorCount = 1;
-        meshletsLayoutBinding.stageFlags = VK_SHADER_STAGE_MESH_BIT_EXT;
+        meshletsLayoutBinding.stageFlags = VK_SHADER_STAGE_MESH_BIT_EXT | VK_SHADER_STAGE_TASK_BIT_EXT;
         meshletsLayoutBinding.pImmutableSamplers = nullptr;
 
         VkDescriptorSetLayoutBinding uniqueVertexLayoutBinding{};
         uniqueVertexLayoutBinding.binding = 2;
         uniqueVertexLayoutBinding.descriptorType = VK_DESCRIPTOR_TYPE_STORAGE_BUFFER;
         uniqueVertexLayoutBinding.descriptorCount = 1;
-        uniqueVertexLayoutBinding.stageFlags = VK_SHADER_STAGE_MESH_BIT_EXT;
+        uniqueVertexLayoutBinding.stageFlags = VK_SHADER_STAGE_MESH_BIT_EXT | VK_SHADER_STAGE_TASK_BIT_EXT;
         uniqueVertexLayoutBinding.pImmutableSamplers = nullptr;
 
         VkDescriptorSetLayoutBinding primitiveIndicesLayoutBinding{};
         primitiveIndicesLayoutBinding.binding = 3;
         primitiveIndicesLayoutBinding.descriptorType = VK_DESCRIPTOR_TYPE_STORAGE_BUFFER;
         primitiveIndicesLayoutBinding.descriptorCount = 1;
-        primitiveIndicesLayoutBinding.stageFlags = VK_SHADER_STAGE_MESH_BIT_EXT;
+        primitiveIndicesLayoutBinding.stageFlags = VK_SHADER_STAGE_MESH_BIT_EXT | VK_SHADER_STAGE_TASK_BIT_EXT;
         primitiveIndicesLayoutBinding.pImmutableSamplers = nullptr;
 
         VkDescriptorSetLayoutBinding vertexBufferLayoutBinding{};
         vertexBufferLayoutBinding.binding = 4;
         vertexBufferLayoutBinding.descriptorType = VK_DESCRIPTOR_TYPE_STORAGE_BUFFER;
         vertexBufferLayoutBinding.descriptorCount = 1;
-        vertexBufferLayoutBinding.stageFlags = VK_SHADER_STAGE_MESH_BIT_EXT;
+        vertexBufferLayoutBinding.stageFlags = VK_SHADER_STAGE_MESH_BIT_EXT | VK_SHADER_STAGE_TASK_BIT_EXT;
         vertexBufferLayoutBinding.pImmutableSamplers = nullptr;
 
         VkDescriptorSetLayoutBinding bindings[] = { uboLayoutBinding, meshletsLayoutBinding, uniqueVertexLayoutBinding, primitiveIndicesLayoutBinding, vertexBufferLayoutBinding };
@@ -775,13 +775,21 @@ private:
 
     void createGraphicsPipeline()
     {
+        auto taskShaderCode = readFile("../shaders/hello_meshlet_task.spv");
         auto meshShaderCode = readFile("../shaders/hello_meshlet_mesh.spv");
         auto fragShaderCode = readFile("../shaders/shader_frag.spv");
 
+        VkShaderModule taskShaderModule = createShaderModule(taskShaderCode);
         VkShaderModule meshShaderModule = createShaderModule(meshShaderCode);
         VkShaderModule fragShaderModule = createShaderModule(fragShaderCode);
 
         // Shader stages
+        VkPipelineShaderStageCreateInfo taskShaderStageInfo{};
+        taskShaderStageInfo.sType = VK_STRUCTURE_TYPE_PIPELINE_SHADER_STAGE_CREATE_INFO;
+        taskShaderStageInfo.stage = VK_SHADER_STAGE_TASK_BIT_EXT;
+        taskShaderStageInfo.module = taskShaderModule;
+        taskShaderStageInfo.pName = "main";
+
         VkPipelineShaderStageCreateInfo meshShaderStageInfo{};
         meshShaderStageInfo.sType = VK_STRUCTURE_TYPE_PIPELINE_SHADER_STAGE_CREATE_INFO;
         meshShaderStageInfo.stage = VK_SHADER_STAGE_MESH_BIT_EXT;
@@ -794,7 +802,7 @@ private:
         fragShaderStageInfo.module = fragShaderModule;
         fragShaderStageInfo.pName = "main";
 
-        VkPipelineShaderStageCreateInfo shaderStages[] = { meshShaderStageInfo, fragShaderStageInfo };
+        VkPipelineShaderStageCreateInfo shaderStages[] = { taskShaderStageInfo, meshShaderStageInfo, fragShaderStageInfo };
 
         // Viewport State (dynamic)
         VkPipelineViewportStateCreateInfo viewportState{};
@@ -843,7 +851,7 @@ private:
         colorBlending.attachmentCount = 1;
         colorBlending.pAttachments = &colorBlendAttachment;
 
-        // Éî¶È²âÊÔ
+        // Depth Stencil
         VkPipelineDepthStencilStateCreateInfo depthStencil{};
         depthStencil.sType = VK_STRUCTURE_TYPE_PIPELINE_DEPTH_STENCIL_STATE_CREATE_INFO;
         depthStencil.depthTestEnable = VK_TRUE;
@@ -866,7 +874,7 @@ private:
         // Mesh pipeline (no vertex input / input assembly)
         VkGraphicsPipelineCreateInfo pipelineInfo{};
         pipelineInfo.sType = VK_STRUCTURE_TYPE_GRAPHICS_PIPELINE_CREATE_INFO;
-        pipelineInfo.stageCount = 2;
+        pipelineInfo.stageCount = 3;
         pipelineInfo.pStages = shaderStages;
         pipelineInfo.pVertexInputState = nullptr;
         pipelineInfo.pInputAssemblyState = nullptr;
@@ -887,6 +895,7 @@ private:
 
         vkDestroyShaderModule(device, fragShaderModule, nullptr);
         vkDestroyShaderModule(device, meshShaderModule, nullptr);
+        vkDestroyShaderModule(device, taskShaderModule, nullptr);
     }
 
     void createFramebuffers()
@@ -1015,7 +1024,7 @@ private:
         poolSizes[0].type = VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER;
         poolSizes[0].descriptorCount = static_cast<uint32_t>(MAX_FRAMES_IN_FLIGHT);
         poolSizes[1].type = VK_DESCRIPTOR_TYPE_STORAGE_BUFFER;
-        // Ã¿¸ö descriptor set ÓÐ 4 ¸ö storage buffer£¬ÇÒÓÐ MAX_FRAMES_IN_FLIGHT ¸ö set
+        // Ã¿ï¿½ï¿½ descriptor set ï¿½ï¿½ 4 ï¿½ï¿½ storage bufferï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ MAX_FRAMES_IN_FLIGHT ï¿½ï¿½ set
         poolSizes[1].descriptorCount = static_cast<uint32_t>(MAX_FRAMES_IN_FLIGHT * 4);
 
         VkDescriptorPoolCreateInfo poolInfo{};
@@ -1729,6 +1738,7 @@ private:
 
 int main()
 {
+    std::system("..\\shaders\\compile.bat");
     HelloTriangleApplication app;
 
     try
