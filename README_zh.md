@@ -1,7 +1,7 @@
 # MeshShaderDemo
 ## 项目简介
 
-MeshShaderDemo 是一个基于 Vulkan 的演示项目，展示了 Mesh Shader 的基本用法。集成了 meshoptimizer 进行网格优化，项目包含完整的着色器编译与运行流程，适合学习和参考 Mesh Shader 相关开发。
+MeshShaderDemo 是一个基于 Vulkan 的演示项目，使用 VK_EXT_mesh_shader 扩展演示了MeshShader的用法，包含一个TaskShader和一个MeshShader用于演示完整的调度过程以及两个Shader之间的参数传递。项目集成了 meshoptimizer 进行网格优化，包含完整的着色器编译与运行流程，适合学习和参考 Mesh Shader 相关开发。
 ![hello_meshlet](https://github.com/user-attachments/assets/66cd0264-7ed4-426c-b327-4ce01fc932b7)
 ## 依赖
 
