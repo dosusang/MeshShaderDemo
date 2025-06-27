@@ -5,7 +5,8 @@
 
 MeshShaderDemo is a Vulkan-based demo project showcasing the basic usage of Mesh Shaders. It integrates meshoptimizer for mesh optimization and includes a complete shader compilation and execution workflow, making it suitable for learning and reference in Mesh Shader development.
 
-![hello_meshlet](https://github.com/user-attachments/assets/66cd0264-7ed4-426c-b327-4ce01fc932b7)
+![anim](https://github.com/user-attachments/assets/a4314427-6535-4cf6-9935-e7f26705518d)
+
 
 ## Dependencies
 
