@@ -259,6 +259,8 @@ private:
     std::vector<VkFence> inFlightFences;
     uint32_t currentFrame = 0;
 
+    PFN_vkCmdDrawMeshTasksEXT vkDrawMeshTaskFunc;
+
     bool framebufferResized = false;
 
     void initWindow()
@@ -576,6 +578,8 @@ private:
 
         vkGetDeviceQueue(device, indices.graphicsFamily.value(), 0, &graphicsQueue);
         vkGetDeviceQueue(device, indices.presentFamily.value(), 0, &presentQueue);
+
+        vkDrawMeshTaskFunc = getMeshTaskExtFunc(device);
     }
 
     void createSwapChain()
@@ -1280,8 +1284,7 @@ private:
             nullptr
         );
 
-        auto func = getMeshTaskExtFunc(device);
-        func(commandBuffer, meshlets.size(), 1, 1);
+        vkDrawMeshTaskFunc(commandBuffer, meshlets.size(), 1, 1);
 
         vkCmdEndRenderPass(commandBuffer);
 
