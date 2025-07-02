@@ -20,6 +20,14 @@ layout(set = 0, binding = 1) readonly buffer MeshletBuffer {
     Meshlet meshlets[];
 };
 
+layout(set = 0, binding = 2) readonly buffer UniqueVertexIndexBuffer {
+    uint uniqueVertexIndices[];
+};
+
+layout(set = 0, binding = 4) readonly buffer VertexBuffer {
+    vec4 vertices[];
+};
+
 struct Task
 {
   uint meshletIndex;
@@ -29,8 +37,27 @@ taskPayloadSharedEXT Task OUT;
 
 void main()
 {
-    OUT.meshletIndex = gl_GlobalInvocationID.x;
-    if(OUT.meshletIndex % 2 == 0) { // culling rule
+    uint meshletIndex = gl_GlobalInvocationID.x;
+    OUT.meshletIndex = meshletIndex;
+    
+    // 获取当前meshlet
+    Meshlet m = meshlets[meshletIndex];
+    
+    // 计算meshlet的中心位置
+    vec3 center = vec3(0.0);
+    for (uint i = 0; i < m.vertexCount; ++i) {
+        uint globalVertexIndex = uniqueVertexIndices[m.vertexOffset + i];
+        vec3 pos = vertices[globalVertexIndex].xyz;
+        center += pos;
+    }
+    center /= float(m.vertexCount);
+    
+    // 将中心位置变换到世界空间
+    vec4 worldCenter = ubo.model * vec4(center, 1.0);
+    
+    // 如果meshlet中心在右边（X坐标 >= 0），则渲染它
+    // 这样会剔除掉左边的meshlet（X坐标 < 0）
+    if (worldCenter.x >= 0.0) {
         EmitMeshTasksEXT(1, 1, 1);
     }
 }
