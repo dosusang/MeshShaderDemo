@@ -7,7 +7,12 @@ layout(set = 0, binding = 0) uniform UBO {
     mat4 model;
     mat4 view;
     mat4 proj;
+    float cullingX;  // X轴的剔除阈值
 } ubo;
+
+layout(push_constant) uniform PushConstants {
+    vec3 sphereOffset;  // 球体偏移量
+} pushConstants;
 
 struct Meshlet {
     uint vertexOffset;
@@ -52,12 +57,12 @@ void main()
     }
     center /= float(m.vertexCount);
     
-    // 将中心位置变换到世界空间
-    vec4 worldCenter = ubo.model * vec4(center, 1.0);
+    // 添加球体偏移量，然后变换到世界空间
+    vec4 worldCenter = ubo.model * vec4(center + pushConstants.sphereOffset, 1.0);
     
-    // 如果meshlet中心在右边（X坐标 >= 0），则渲染它
-    // 这样会剔除掉左边的meshlet（X坐标 < 0）
-    if (worldCenter.x >= 0.0) {
+    // 剔除掉X坐标大于cullingX值的meshlet（右边的meshlet）
+    // 只渲染X坐标小于等于cullingX的meshlet
+    if (worldCenter.x <= ubo.cullingX) {
         EmitMeshTasksEXT(1, 1, 1);
     }
 }

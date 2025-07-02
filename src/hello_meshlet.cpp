@@ -180,6 +180,7 @@ struct UniformBufferObject
     alignas(16) glm::mat4 model;
     alignas(16) glm::mat4 view;
     alignas(16) glm::mat4 proj;
+    alignas(4) float cullingX;  // X轴的剔除阈值
 };
 
 class HelloTriangleApplication
@@ -864,11 +865,19 @@ private:
         depthStencil.depthBoundsTestEnable = VK_FALSE;
         depthStencil.stencilTestEnable = VK_FALSE;
 
+        // Push Constant Range
+        VkPushConstantRange pushConstantRange{};
+        pushConstantRange.stageFlags = VK_SHADER_STAGE_TASK_BIT_EXT | VK_SHADER_STAGE_MESH_BIT_EXT;
+        pushConstantRange.offset = 0;
+        pushConstantRange.size = sizeof(glm::vec3); // 3个float用于球体偏移量
+
         // Pipeline Layout
         VkPipelineLayoutCreateInfo pipelineLayoutInfo{};
         pipelineLayoutInfo.sType = VK_STRUCTURE_TYPE_PIPELINE_LAYOUT_CREATE_INFO;
         pipelineLayoutInfo.setLayoutCount = 1;
         pipelineLayoutInfo.pSetLayouts = &descriptorSetLayout;
+        pipelineLayoutInfo.pushConstantRangeCount = 1;
+        pipelineLayoutInfo.pPushConstantRanges = &pushConstantRange;
 
         if (vkCreatePipelineLayout(device, &pipelineLayoutInfo, nullptr, &pipelineLayout) != VK_SUCCESS)
         {
@@ -1284,7 +1293,31 @@ private:
             nullptr
         );
 
-        vkDrawMeshTaskFunc(commandBuffer, meshlets.size(), 1, 1);
+        // 绘制多个球体在不同位置
+        std::vector<glm::vec3> spherePositions = {
+            glm::vec3(-3.0f, 0.0f, 0.0f),   // 左边球体
+            glm::vec3(0.0f, 0.0f, 0.0f),    // 中间球体
+            glm::vec3(3.0f, 0.0f, 0.0f),    // 右边球体
+            glm::vec3(-1.5f, 2.0f, 0.0f),   // 左上球体
+            glm::vec3(1.5f, 2.0f, 0.0f),    // 右上球体
+            glm::vec3(-1.5f, -2.0f, 0.0f),  // 左下球体
+            glm::vec3(1.5f, -2.0f, 0.0f)    // 右下球体
+        };
+
+        for (const auto& position : spherePositions) {
+            // 设置当前球体的偏移量
+            vkCmdPushConstants(
+                commandBuffer,
+                pipelineLayout,
+                VK_SHADER_STAGE_TASK_BIT_EXT | VK_SHADER_STAGE_MESH_BIT_EXT,
+                0,
+                sizeof(glm::vec3),
+                &position
+            );
+            
+            // 绘制当前球体
+            vkDrawMeshTaskFunc(commandBuffer, meshlets.size(), 1, 1);
+        }
 
         vkCmdEndRenderPass(commandBuffer);
 
@@ -1327,10 +1360,13 @@ private:
         float time = std::chrono::duration<float, std::chrono::seconds::period>(currentTime - startTime).count();
 
         UniformBufferObject ubo{};
-        ubo.model = glm::rotate(glm::mat4(1.0f), time * glm::radians(90.0f), glm::vec3(0.0f, 0.0f, 1.0f));
-        ubo.view = glm::lookAt(glm::vec3(2.0f, 2.0f, 2.0f), glm::vec3(0.0f, 0.0f, 0.0f), glm::vec3(0.0f, 0.0f, 1.0f));
-        ubo.proj = glm::perspective(glm::radians(45.0f), swapChainExtent.width / (float)swapChainExtent.height, 0.1f, 10.0f);
+        ubo.model = glm::mat4(1.0f); // 不旋转，使用单位矩阵
+        ubo.view = glm::lookAt(glm::vec3(0.0f, 0.0f, 8.0f), glm::vec3(0.0f, 0.0f, 0.0f), glm::vec3(0.0f, 1.0f, 0.0f));
+        ubo.proj = glm::perspective(glm::radians(45.0f), swapChainExtent.width / (float)swapChainExtent.height, 0.1f, 20.0f);
         ubo.proj[1][1] *= -1;
+        
+        // 设置culling阈值，动态变化以展示效果
+        ubo.cullingX = sin(time * 0.5f) * 4.0f; // 在-2到2之间变化
 
         memcpy(uniformBuffersMapped[currentImage], &ubo, sizeof(ubo));
     }
